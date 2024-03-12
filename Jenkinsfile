@@ -65,23 +65,17 @@ stage('Deploy') {
         }
     }
     steps {
-        parallel {
-            stage('Deploy-Branch1') {
-                steps {
-                    script {
-                        sh 'echo Deploying project to Branch1...'
-                        // Add deployment steps for Branch1 here
-                    }
+        script {
+            parallel(
+                "Deploy-Branch1": {
+                    sh 'echo Deploying project to Branch1...'
+                    // Add deployment steps for Branch1 here
+                },
+                "Deploy-Branch2": {
+                    sh 'echo Deploying project to Branch2...'
+                    // Add deployment steps for Branch2 here
                 }
-            }
-            stage('Deploy-Branch2') {
-                steps {
-                    script {
-                        sh 'echo Deploying project to Branch2...'
-                        // Add deployment steps for Branch2 here
-                    }
-                }
-            }
+            )
         }
     }
 }
