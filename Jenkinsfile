@@ -2,16 +2,13 @@ pipeline {
     agent any
     
     stages {
-        stage('Declarative: Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
+        
         stage('Build') {
             steps {
                 sh 'mkdir -p build'
                 sh 'cp index.html build/'
                 sh 'echo Build completed'
+                input message: 'Approve deployment?', ok: 'Proceed', submitter: 'sravanisoudampally'
             }
         }
         stage('Test') {
@@ -42,14 +39,42 @@ pipeline {
         stage('Deploy') {
             when {
                 expression {
-                    return env.APPROVAL_TOKEN != null
+                    // Check if the approval token matches the expected token
+                    return env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN
                 }
             }
             steps {
-                script {
-                    sh 'echo Deploying project...'
-                    // Add deployment steps here
+                parallel {
+                    stage('Deploy-Branch1') {
+                        steps {
+                            script {
+                                sh 'echo Deploying project to Branch1...'
+                                // Add deployment steps for Branch1 here
+                            }
+                        }
+                    }
+                    stage('Deploy-Branch2') {
+                        steps {
+                            script {
+                                sh 'echo Deploying project to Branch2...'
+                                // Add deployment steps for Branch2 here
+                            }
+                        }
+                    }
                 }
+            }
+        }
+    }
+    
+    post {
+        failure {
+            script {
+                // If the deployment fails, send a notification
+                emailext (
+                    subject: "Deployment failed: ${currentBuild.fullDisplayName}",
+                    body: "The deployment of ${env.JOB_NAME} (${env.BUILD_NUMBER}) has failed.",
+                    to: "sravanisoudampally@gmail.com"
+                )
             }
         }
     }
