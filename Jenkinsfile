@@ -2,11 +2,17 @@ pipeline {
     agent any
     
     stages {
+        stage('Declarative: Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Build') {
             steps {
                 sh 'mkdir -p build'
                 sh 'cp index.html build/'
                 sh 'echo Build completed'
+                input message: 'Approve deployment?', ok: 'Proceed', submitter: 'sravanisoudampally'
             }
         }
         stage('Test') {
@@ -59,9 +65,23 @@ stage('Deploy') {
         }
     }
     steps {
-        script {
-            sh 'echo Deploying project...'
-            // Add deployment steps here
+        parallel {
+            stage('Deploy-Branch1') {
+                steps {
+                    script {
+                        sh 'echo Deploying project to Branch1...'
+                        // Add deployment steps for Branch1 here
+                    }
+                }
+            }
+            stage('Deploy-Branch2') {
+                steps {
+                    script {
+                        sh 'echo Deploying project to Branch2...'
+                        // Add deployment steps for Branch2 here
+                    }
+                }
+            }
         }
     }
 }
