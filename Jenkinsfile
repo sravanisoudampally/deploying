@@ -19,11 +19,12 @@ pipeline {
         }
         stage('Email Approval') {
             steps {
-                // Send an email for approval with a link
                 script {
+                    // Send an email for approval with a link
+                    def approvalLink = 'http://yourdeploymentapprovallink'
                     mail to: 'sravanisoudampally@gmail.com',
                          subject: 'Approval needed for deployment',
-                         body: 'Please approve the deployment by clicking <a href="http://yourdeploymentapprovallink">here</a>.'
+                         body: "Please approve the deployment by clicking <a href='${approvalLink}'>here</a>."
                 }
             }
         }
@@ -33,8 +34,8 @@ pipeline {
                 expression { currentBuild.result == 'SUCCESS' }
             }
             steps {
-                // Wait for manual input to proceed with deployment
-                input message: 'Deploy?', ok: 'Deploy'
+                // Wait for user input to proceed with deployment
+                input message: 'Click the link in the email to approve deployment and proceed'
                 
                 script {
                     def nginxServerUsername = 'ubuntu'
