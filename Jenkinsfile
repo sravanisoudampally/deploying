@@ -12,12 +12,12 @@ pipeline {
                 sh 'mkdir -p build'
                 sh 'cp index.html build/'
                 sh 'echo Build completed'
-                input message: 'Approve deployment?', ok: 'Proceed', submitter: 'sravanisoudampally'
             }
         }
         stage('Test') {
             steps {
                 script {
+                    // Use a different approach to check if a file exists, for example:
                     def fileExists = fileExists('build/index.html')
                     echo "HTML file exists: ${fileExists}"
                 }
@@ -40,6 +40,30 @@ pipeline {
                 }
             }
         }
+        
+        // Deploy stage runs only after approval is granted
+        stage('Deploy') {
+            when {
+                expression {
+                    // Check if the approval token matches the expected token
+                    return env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN
+                }
+            }
+            steps {
+                script {
+                    parallel(
+                        "Deploy-Branch1": {
+                            sh 'echo Deploying project to Branch1...'
+                            // Add deployment steps for Branch1 here
+                        },
+                        "Deploy-Branch2": {
+                            sh 'echo Deploying project to Branch2...'
+                            // Add deployment steps for Branch2 here
+                        }
+                    )
+                }
+            }
+        }
     }
     
     post {
@@ -50,30 +74,6 @@ pipeline {
                     subject: "Deployment failed: ${currentBuild.fullDisplayName}",
                     body: "The deployment of ${env.JOB_NAME} (${env.BUILD_NUMBER}) has failed.",
                     to: "sravanisoudampally@gmail.com"
-                )
-            }
-        }
-    }
-    
-    // Deploy stage runs only after approval is granted
-    stage('Deploy') {
-        when {
-            expression {
-                // Check if the approval token matches the expected token
-                return env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN
-            }
-        }
-        steps {
-            script {
-                parallel(
-                    "Deploy-Branch1": {
-                        sh 'echo Deploying project to Branch1...'
-                        // Add deployment steps for Branch1 here
-                    },
-                    "Deploy-Branch2": {
-                        sh 'echo Deploying project to Branch2...'
-                        // Add deployment steps for Branch2 here
-                    }
                 )
             }
         }
