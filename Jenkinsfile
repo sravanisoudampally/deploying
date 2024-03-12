@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     stages {
-        
         stage('Build') {
             steps {
                 sh 'mkdir -p build'
@@ -24,38 +23,24 @@ pipeline {
         }
         stage('Approval') {
             steps {
-                script {
-                    emailext (
-                     body: '''please approve the deployment by clink the link below
-''', subject: 'approval needed for deployment', to: 'sravanisoudampally@gmail.com'
-                    )
-                }
+                emailext (
+                    body: '''Please approve the deployment by clicking the link below.''',
+                    subject: 'Approval needed for deployment',
+                    to: 'sravanisoudampally@gmail.com'
+                )
                 input message: 'Approve deployment?', submitter: 'sravani'
             }
         }
         stage('Deploy') {
             steps {
                 sh 'echo "Deploying project..."'
+                // Add deployment steps here
             }
         }
     }
+}
 
-    post {
-        success {
-            emailext (
-                subject: 'Build, Test, and Deployment Successful',
-                body: 'The build, test, and deployment were successful.',
-                to: 'sravani0944@gmail.com',
-                mimeType: 'text/html'
-            )
-        }
-        failure {
-            emailext (
-                subject: 'Build, Test, or Deployment Failed',
-                body: 'The build, test, or deployment failed.',
-                to: 'sravani0944@gmail.com',
-                mimeType: 'text/html'
-            )
-        }
-    }
+def fileExists(filePath) {
+    def file = new File(filePath)
+    return file.exists() && file.isFile() && file.length() > 0
 }
