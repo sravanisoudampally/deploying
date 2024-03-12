@@ -12,7 +12,7 @@ pipeline {
                 sh 'mkdir -p build'
                 sh 'cp index.html build/'
                 sh 'echo Build completed'
-                input message: 'Approve deployment?', ok: 'Proceed'
+                input message: 'Approve deployment?', ok: 'Proceed', submitter: 'sravanisoudampally'
             }
         }
         stage('Test') {
@@ -27,8 +27,7 @@ pipeline {
             steps {
                 script {
                     def approvalToken = 'approval-' + UUID.randomUUID().toString()
-                    def triggerUrl = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty"
-                    def approvalLink = triggerUrl + "?token=" + approvalToken
+                    def approvalLink = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty?token=${approvalToken}"
                     def body = "Please approve the deployment by clicking the link below:\n${approvalLink}"
                     emailext (
                         body: body,
@@ -37,18 +36,6 @@ pipeline {
                     )
                     // Store the token in environment variable for further validation
                     env.APPROVAL_TOKEN = approvalToken
-                }
-            }
-        }
-        stage('Deploy') {
-            steps {
-                script {
-                    if (env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN) {
-                        sh 'echo Deploying project...'
-                        // Add deployment steps here
-                    } else {
-                        error('Deployment not approved. Aborting...')
-                    }
                 }
             }
         }
@@ -66,4 +53,19 @@ pipeline {
             }
         }
     }
-}
+    
+    stage('Deploy') {
+        when {
+            expression {
+                // Check if the approval token matches the expected token
+                return env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN
+            }
+        }
+        steps {
+            script {
+                parallel(
+                    "Deploy-Branch1": {
+                        sh 'echo Deploying project to Branch1...'
+                        // Add deployment steps for Branch1 here
+                    },
+                    "Deploy
