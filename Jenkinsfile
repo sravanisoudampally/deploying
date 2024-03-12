@@ -1,3 +1,9 @@
+import hudson.model.*
+import jenkins.model.*
+import hudson.EnvVars
+
+def triggerUrl = "${Jenkins.instance.rootUrl}${JOB_NAME}/input/Proceed%20or%20Abort/proceedEmpty"
+
 pipeline {
     agent any
 
@@ -23,18 +29,31 @@ pipeline {
         }
         stage('Approval') {
             steps {
-                emailext (
-                    body: 'Please approve the deployment by clicking the link below.',
-                    subject: 'Approval needed for deployment',
-                    to: 'sravanisoudampally@gmail.com'
-                )
-                input message: 'Approve deployment?', submitter: 'sravani'
+                script {
+                    def approvalToken = 'approval-' + UUID.randomUUID().toString()
+                    def approvalLink = triggerUrl + "?token=" + approvalToken
+                    def body = "Please approve the deployment by clicking the link below:\n${approvalLink}"
+                    emailext (
+                        body: body,
+                        subject: 'Approval needed for deployment',
+                        to: 'sravanisoudampally@gmail.com'
+                    )
+                    // Store the token in environment variable for further validation
+                    env.APPROVAL_TOKEN = approvalToken
+                }
             }
         }
         stage('Deploy') {
+            when {
+                expression {
+                    return env.APPROVAL_TOKEN != null
+                }
+            }
             steps {
-                sh 'echo Deploying project...'
-                // Add deployment steps here
+                script {
+                    sh 'echo Deploying project...'
+                    // Add deployment steps here
+                }
             }
         }
     }
