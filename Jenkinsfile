@@ -29,7 +29,7 @@ pipeline {
                     def approvalToken = 'approval-' + UUID.randomUUID().toString()
                     def triggerUrl = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty"
                     def approvalLink = triggerUrl + "?token=" + approvalToken
-                    def body = "Please click the link below to approve the deployment:\n${approvalLink}"
+                    def body = "Please approve the deployment by clicking the link below:\n${approvalLink}"
                     emailext (
                         body: body,
                         subject: 'Approval needed for deployment',
