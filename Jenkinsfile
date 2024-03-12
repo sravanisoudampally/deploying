@@ -12,6 +12,7 @@ pipeline {
                 sh 'mkdir -p build'
                 sh 'cp index.html build/'
                 sh 'echo Build completed'
+                input message: 'Approve deployment?', ok: 'Proceed', submitter: 'sravanisoudampally'
             }
         }
         stage('Test') {
