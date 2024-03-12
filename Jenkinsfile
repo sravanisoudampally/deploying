@@ -1,80 +1,44 @@
 pipeline {
     agent any
-    
+
     stages {
-        stage('Declarative: Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
         stage('Build') {
             steps {
-                sh 'mkdir -p build'
-                sh 'cp index.html build/'
-                sh 'echo Build completed'
-                input message: 'Approve deployment?', ok: 'Proceed', submitter: 'sravanisoudampally'
+                // Replace this command with your build command
+                sh 'npm install' // Or any other build command you use
             }
         }
         stage('Test') {
             steps {
-                script {
-                    def fileExists = fileExists('build/index.html')
-                    echo "HTML file exists: ${fileExists}"
-                }
+                // Replace this command with your test command
+                sh 'npm test' // Or any other test command you use
             }
         }
-        stage('Approval') {
+        stage('Email Approval') {
             steps {
-                script {
-                    def approvalToken = 'approval-' + UUID.randomUUID().toString()
-                    def triggerUrl = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty"
-                    def approvalLink = triggerUrl + "?token=" + approvalToken
-                    def body = "Please approve the deployment by clicking the link below:\n${approvalLink}"
-                    emailext (
-                        body: body,
-                        subject: 'Approval needed for deployment',
-                        to: 'sravanisoudampally@gmail.com'
-                    )
-                    // Store the token in environment variable for further validation
-                    env.APPROVAL_TOKEN = approvalToken
-                }
+                // Send an email for approval with a link
+                mail to: 'sravanisoudampally@gmail.com',
+                     subject: 'Approval needed for deployment',
+                     body: 'Please approve the deployment by clicking <a href="http://yourdeploymentapprovallink">here</a>.'
             }
         }
-        
-        // Deploy stage runs only after approval is granted
         stage('Deploy') {
             when {
-                expression {
-                    // Check if the approval token matches the expected token
-                    return env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN
-                }
+                beforeAgent true
+                expression { currentBuild.result == 'SUCCESS' }
             }
             steps {
-                script {
-                    parallel(
-                        "Deploy-Branch1": {
-                            sh 'echo Deploying project to Branch1...'
-                            // Add deployment steps for Branch1 here
-                        },
-                        "Deploy-Branch2": {
-                            sh 'echo Deploying project to Branch2...'
-                            // Add deployment steps for Branch2 here
-                        }
-                    )
-                }
-            }
-        }
-    }
-    
-    post {
-        failure {
-            script {
-                // If the deployment fails, send a notification
-                emailext (
-                    subject: "Deployment failed: ${currentBuild.fullDisplayName}",
-                    body: "The deployment of ${env.JOB_NAME} (${env.BUILD_NUMBER}) has failed.",
-                    to: "sravanisoudampally@gmail.com"
-                )
+                // Deploy only if the email is approved
+                input 'Deploy?'
+                
+                // Replace the following variables with your actual values
+                def nginxServerUsername = 'ubuntu'
+                def nginxServerHost = '35.176.5.16'
+                def nginxServerPath = '/var/www/html'
+                def localFilePath = '/path/to/local/files'
+                
+                // Use SCP to copy files to the Nginx server
+                sh "scp -r ${localFilePath} ${nginxServerUsername}@${nginxServerHost}:${nginxServerPath}"
             }
         }
     }
