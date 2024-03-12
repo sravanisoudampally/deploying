@@ -29,10 +29,7 @@ pipeline {
             }
         }
         stage('Deploy') {
-            when {
-                beforeAgent true
-                expression { currentBuild.result == 'SUCCESS' }
-            }
+     
             steps {
                 // Wait for user input to proceed with deployment
                 input message: 'Click the link in the email to approve deployment and proceed'
