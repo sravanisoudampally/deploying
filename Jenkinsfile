@@ -2,15 +2,18 @@ pipeline {
     agent any
     
     stages {
+        stage('Declarative: Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Build') {
             steps {
                 sh 'mkdir -p build'
                 sh 'cp index.html build/'
                 sh 'echo Build completed'
-                input message: 'Approve deployment?', ok: 'Proceed', submitter: 'sravanisoudampally'
             }
         }
-        
         stage('Test') {
             steps {
                 script {
@@ -19,12 +22,12 @@ pipeline {
                 }
             }
         }
-        
         stage('Approval') {
             steps {
                 script {
                     def approvalToken = 'approval-' + UUID.randomUUID().toString()
-                    def approvalLink = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty?token=${approvalToken}"
+                    def triggerUrl = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty"
+                    def approvalLink = triggerUrl + "?token=" + approvalToken
                     def body = "Please approve the deployment by clicking the link below:\n${approvalLink}"
                     emailext (
                         body: body,
@@ -36,18 +39,42 @@ pipeline {
                 }
             }
         }
-        
-        stage('Deploy') {
-            when {
-                expression {
-                    // Check if the approval token matches the expected token
-                    return env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN
+    }
+    
+    post {
+        failure {
+            script {
+                // If the deployment fails, send a notification
+                emailext (
+                    subject: "Deployment failed: ${currentBuild.fullDisplayName}",
+                    body: "The deployment of ${env.JOB_NAME} (${env.BUILD_NUMBER}) has failed.",
+                    to: "sravanisoudampally@gmail.com"
+                )
+            }
+        }
+    }
+}
+
+// Deploy stage runs only after approval is granted
+stage('Deploy') {
+    when {
+        expression {
+            // Check if the approval token matches the expected token
+            return env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN
+        }
+    }
+    steps {
+        script {
+            parallel(
+                "Deploy-Branch1": {
+                    sh 'echo Deploying project to Branch1...'
+                    // Add deployment steps for Branch1 here
+                },
+                "Deploy-Branch2": {
+                    sh 'echo Deploying project to Branch2...'
+                    // Add deployment steps for Branch2 here
                 }
-            }
-            steps {
-                // Add deployment steps here
-                sh 'echo Deployment started'
-            }
+            )
         }
     }
 }
