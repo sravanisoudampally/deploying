@@ -2,12 +2,17 @@ pipeline {
     agent any
     
     stages {
+        stage('Declarative: Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Build') {
             steps {
                 sh 'mkdir -p build'
                 sh 'cp index.html build/'
                 sh 'echo Build completed'
-                input message: 'Approve deployment?', ok: 'Proceed', submitter: 'sravanisoudampally'
+                input message: 'Approve deployment?', ok: 'Proceed'
             }
         }
         stage('Test') {
@@ -35,6 +40,18 @@ pipeline {
                 }
             }
         }
+        stage('Deploy') {
+            steps {
+                script {
+                    if (env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN) {
+                        sh 'echo Deploying project...'
+                        // Add deployment steps here
+                    } else {
+                        error('Deployment not approved. Aborting...')
+                    }
+                }
+            }
+        }
     }
     
     post {
@@ -47,22 +64,6 @@ pipeline {
                     to: "sravanisoudampally@gmail.com"
                 )
             }
-        }
-    }
-}
-
-// Deploy stage runs only after approval is granted
-stage('Deploy') {
-    when {
-        expression {
-            // Check if the approval token matches the expected token
-            return env.APPROVAL_TOKEN != null && params.token == env.APPROVAL_TOKEN
-        }
-    }
-    steps {
-        script {
-            sh 'echo Deploying project...'
-            // Add deployment steps here
         }
     }
 }
