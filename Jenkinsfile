@@ -12,7 +12,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    if (fileExists('build/index.html')) {
+                    def htmlFileExists = sh(script: 'if [ -f build/index.html ]; then echo "true"; fi', returnStatus: true).trim() == 'true'
+                    if (htmlFileExists) {
                         echo "HTML file exists and is not empty."
                     } else {
                         error "HTML file not found or empty."
@@ -37,8 +38,4 @@ pipeline {
             }
         }
     }
-}
-
-def fileExists(filePath) {
-    return file(filePath).exists()
 }
