@@ -4,14 +4,21 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Replace this command with your build command
-                sh 'npm install' // Or any other build command you use
+                // Create a build directory and copy index.html into it
+                sh 'mkdir -p build'
+                sh 'cp index.html build/'
+                
+                // Echo a message indicating that the build is completed
+                sh 'echo Build completed'
             }
         }
         stage('Test') {
             steps {
-                // Replace this command with your test command
-                sh 'npm test' // Or any other test command you use
+                script {
+                    // Check if the index.html file exists in the build directory
+                    def fileExists = fileExists('build/index.html')
+                    echo "HTML file exists: ${fileExists}"
+                }
             }
         }
         stage('Email Approval') {
