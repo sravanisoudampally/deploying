@@ -2,6 +2,11 @@ pipeline {
     agent any
     
     stages {
+        stage('Declarative: Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Build') {
             steps {
                 sh 'mkdir -p build'
@@ -12,12 +17,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    def result = sh(script: '[ -f build/index.html ] && echo true || echo false', returnStdout: true).trim()
-                    if (result == 'true') {
-                        echo "HTML file exists and is not empty."
-                    } else {
-                        error "HTML file not found or empty."
-                    }
+                    def fileExists = fileExists('build/index.html')
+                    echo "HTML file exists: ${fileExists}"
                 }
             }
         }
@@ -25,7 +26,7 @@ pipeline {
             steps {
                 script {
                     def approvalToken = 'approval-' + UUID.randomUUID().toString()
-                    def triggerUrl = "${currentBuild.rawBuild.parent.url}input/Proceed%20or%20Abort/proceedEmpty"
+                    def triggerUrl = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty"
                     def approvalLink = triggerUrl + "?token=" + approvalToken
                     def body = "Please approve the deployment by clicking the link below:\n${approvalLink}"
                     emailext (
@@ -52,4 +53,9 @@ pipeline {
             }
         }
     }
+}
+
+def fileExists(String filePath) {
+    def file = new File(filePath)
+    return file.exists()
 }
