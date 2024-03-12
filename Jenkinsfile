@@ -1,12 +1,6 @@
-import hudson.model.*
-import jenkins.model.*
-import hudson.EnvVars
-
-def triggerUrl = "${Jenkins.instance.rootUrl}${JOB_NAME}/input/Proceed%20or%20Abort/proceedEmpty"
-
 pipeline {
     agent any
-
+    
     stages {
         stage('Build') {
             steps {
@@ -31,6 +25,7 @@ pipeline {
             steps {
                 script {
                     def approvalToken = 'approval-' + UUID.randomUUID().toString()
+                    def triggerUrl = "${currentBuild.rawBuild.parent.url}input/Proceed%20or%20Abort/proceedEmpty"
                     def approvalLink = triggerUrl + "?token=" + approvalToken
                     def body = "Please approve the deployment by clicking the link below:\n${approvalLink}"
                     emailext (
