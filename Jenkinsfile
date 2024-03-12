@@ -26,12 +26,8 @@ pipeline {
             steps {
                 script {
                     emailext (
-                        subject: 'Approval Needed for Deployment',
-                        body: 'Please approve the deployment by clicking the link below:',
-                        to: 'sravanisoudampally@gmail.com',
-                        mimeType: 'text/html',
-                        replyTo: '$DEFAULT_REPLYTO',
-                        attachmentsPattern: "**/*"
+                     body: '''please approve the deployment by clink the link below
+''', subject: 'approval needed for deployment', to: 'sravanisoudampally@gmail.com'
                     )
                 }
                 input message: 'Approve deployment?', submitter: 'sravani'
