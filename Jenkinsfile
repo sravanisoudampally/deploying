@@ -30,15 +30,16 @@ pipeline {
             steps {
                 // Deploy only if the email is approved
                 input 'Deploy?'
-                
-                // Replace the following variables with your actual values
-                def nginxServerUsername = 'ubuntu'
-                def nginxServerHost = '35.176.5.16'
-                def nginxServerPath = '/var/www/html'
-                def localFilePath = '/path/to/local/files'
-                
-                // Use SCP to copy files to the Nginx server
-                sh "scp -r ${localFilePath} ${nginxServerUsername}@${nginxServerHost}:${nginxServerPath}"
+
+                script {
+                    def nginxServerUsername = 'ubuntu'
+                    def nginxServerHost = '35.176.5.16'
+                    def nginxServerPath = '/var/www/html'
+                    def localFilePath = '/path/to/local/files'
+
+                    // Use SCP to copy files to the Nginx server
+                    sh "scp -r ${localFilePath} ${nginxServerUsername}@${nginxServerHost}:${nginxServerPath}"
+                }
             }
         }
     }
