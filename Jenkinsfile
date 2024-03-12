@@ -6,14 +6,13 @@ pipeline {
             steps {
                 sh 'mkdir -p build'
                 sh 'cp index.html build/'
-                sh 'echo "Build completed"'
+                sh 'echo Build completed'
             }
         }
         stage('Test') {
             steps {
                 script {
-                    def htmlFile = 'build/index.html'
-                    if (fileExists(htmlFile)) {
+                    if (fileExists('build/index.html')) {
                         echo "HTML file exists and is not empty."
                     } else {
                         error "HTML file not found or empty."
@@ -24,7 +23,7 @@ pipeline {
         stage('Approval') {
             steps {
                 emailext (
-                    body: '''Please approve the deployment by clicking the link below.''',
+                    body: 'Please approve the deployment by clicking the link below.',
                     subject: 'Approval needed for deployment',
                     to: 'sravanisoudampally@gmail.com'
                 )
@@ -33,7 +32,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'echo "Deploying project..."'
+                sh 'echo Deploying project...'
                 // Add deployment steps here
             }
         }
@@ -41,6 +40,5 @@ pipeline {
 }
 
 def fileExists(filePath) {
-    def file = new File(filePath)
-    return file.exists() && file.isFile() && file.length() > 0
+    return file(filePath).exists()
 }
