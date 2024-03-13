@@ -19,6 +19,7 @@ pipeline {
         }
         stage('Email Approval') {
             steps {
+                 input message: 'Click the link in the email to approve deployment and proceed'
                 script {
                     def approvalToken = 'approval-' + UUID.randomUUID().toString()
                     def triggerUrl = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty"
