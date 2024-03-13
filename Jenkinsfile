@@ -41,7 +41,7 @@ pipeline {
                     def localFilePath = 'build/'
 
                     // Use SCP to copy files to the Nginx server
-                    sh "scp -r ${localFilePath} ${nginxServerUsername}@${nginxServerHost}:${nginxServerPath}"
+                    sh "scp -r ${localfilepath} ${nginxServerUsername}@${nginxServerHost}:${nginxServerPath}"
                 }
             }
         }
