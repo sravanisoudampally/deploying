@@ -21,11 +21,19 @@ pipeline {
             steps {
                  input message: 'Click the link in the email to approve deployment and proceed'
                 script {
-                    // Send an email for approval with a link
-                    def approvalLink = 'http://yourdeploymentapprovallink'
-                    mail to: 'sravanisoudampally@gmail.com',
-                         subject: 'Approval needed for deployment',
-                         body: "Please approve the deployment by clicking <a href='${approvalLink}'>here</a>."
+                   
+
+                     def approvalToken = 'approval-' + UUID.randomUUID().toString()
+                    def triggerUrl = "${env.BUILD_URL}input/Proceed%20or%20Abort/proceedEmpty"
+                    def approvalLink = triggerUrl + "?token=" + approvalToken
+                    def body = "Please approve the deployment by clicking the link below:\n${approvalLink}"
+                    emailext (
+                        body: body,
+                        subject: 'Approval needed for deployment',
+                        to: 'sravanisoudampally@gmail.com'
+                    )
+                    // Store the token in environment variable for further validation
+                    env.APPROVAL_TOKEN = approvalToken
                 }
             }
         }
