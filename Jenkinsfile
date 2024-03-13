@@ -41,7 +41,7 @@ pipeline {
      
             steps {
               
-                input message: 'Click the link in the email to approve deployment and proceed'
+               
                 
                 script {
                     def nginxServerUsername = 'ubuntu'
