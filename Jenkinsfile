@@ -36,12 +36,12 @@ pipeline {
                 
                 script {
                     def nginxServerUsername = 'ubuntu'
-                    def nginxServerHost = '35.176.5.16'
-                    def nginxServerPath = '/var/www/html'
-                    def localFilePath = 'build/'
+            def nginxServerHost = '35.176.5.16'
+            def nginxServerPath = '/var/www/html'
+            def localFilePath = 'build/'
 
-                    // Use SCP to copy files to the Nginx server
-                    sh "scp -r ${localfilepath} ${nginxServerUsername}@${nginxServerHost}:${nginxServerPath}"
+            // Use SCP to copy files to the Nginx server
+            sh "scp -r ${localFilePath} ${nginxServerUsername}@${nginxServerHost}:${nginxServerPath}"
                 }
             }
         }
