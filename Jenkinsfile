@@ -19,6 +19,7 @@ pipeline {
         }
         stage('Email Approval') {
             steps {
+                 input message: 'Click the link in the email to approve deployment and proceed'
                 script {
                     // Send an email for approval with a link
                     def approvalLink = 'http://yourdeploymentapprovallink'
