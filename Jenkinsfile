@@ -31,7 +31,7 @@ pipeline {
         stage('Deploy') {
      
             steps {
-                // Wait for user input to proceed with deployment
+              
                 input message: 'Click the link in the email to approve deployment and proceed'
                 
                 script {
